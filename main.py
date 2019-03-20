@@ -49,6 +49,7 @@ def plot_matches(img1, u1, img2, u2, skip=10):
 # TODO: switch to piexif
 def get_intrinsic_params(img):
     # Get relevant exif data
+
     exif = {ExifTags.TAGS[k]: v for k, v in img._getexif().items() if k in ExifTags.TAGS}
 
     f_length_35 = int(exif['FocalLengthIn35mmFilm'])
@@ -115,14 +116,16 @@ def main(argv):
     im_2 = plt.imread(argv[1])
 
     sw = SIFTWrapper(im_1, im_2)
-    u1, u2 = sw.compute_best_matches(0.9)
+    u1, u2 = sw.compute_best_matches(0.7)
 
+    # Note that here we are assuming all pictures came from same camera
+    # (A safe assumption for now, because we KNOW they came from the same camera)
     K_cam = intrinsic_cam_mtx(f, cu, cv)
     extrinsic_cam, x1_inliers, x2_inliers = get_inliers(u1, u2, K_cam)
 
     # Note that we are using generalized
     # camera coordinates, so we do not
-    # need to multiply by K
+    # need to multiply by K(For either of P0, P1)
     P_0 = np.array([[1, 0, 0, 0],
                     [0, 1, 0, 0],
                     [0, 0, 1, 0]])
